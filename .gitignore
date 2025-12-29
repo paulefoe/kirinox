@@ -1,0 +1,23 @@
+# Build artifacts
+/target/
+
+# Cargo lock file (optional - include for binaries, exclude for libraries)
+# Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and sample data
+*.log
+/nginx-logs/
+
+# Environment
+.env
+.env.local
