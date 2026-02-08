@@ -1,10 +1,11 @@
 use std::{env::Args, fs::File};
-use std::fs;
+use chrono::{DateTime, TimeDelta, Utc};
 use std::io::{BufRead, BufReader, Error, Seek, SeekFrom};
 use std::path::PathBuf;
 use parser::{self, LogStruct, Parser};
 use enricher::Enricher;
 use persister::Db;
+use displayer::Displayer;
 
 #[derive(Debug)]
 pub struct ArgsConfig {
@@ -33,6 +34,7 @@ pub fn read_logs(log_path: &PathBuf) -> Result<i32, Error> {
     let enricher = Enricher::new();
     let persister = Db::new();
     let parser = Parser::new(log_path).unwrap();
+    let displayer = Displayer{};
     let last_recorded_ts = persister.fetch_last_known_entry_date();
     let files = parser.find_files(last_recorded_ts);
     for file in files.iter().rev() {
@@ -59,5 +61,21 @@ pub fn read_logs(log_path: &PathBuf) -> Result<i32, Error> {
         }
     }
     parser.clean_up(files)?;
+    let hosts = persister.get_hosts().unwrap();
+    let utc: DateTime<Utc> = Utc::now();
+    let delta_week = TimeDelta::days(7);
+    let delta_month = TimeDelta::days(31);
+
+    let week_ago = utc - delta_week;
+    let month_ago = utc - delta_month;
+    let dates = vec![week_ago.timestamp_millis(), month_ago.timestamp_millis(), 0];
+    for host in hosts {
+        for date in &dates {
+            let stats = persister.get_stats(&host, *date);
+            displayer.get_template(stats, &host);
+        }
+    }
+
+
     Ok(10)
 }

@@ -1,0 +1,8 @@
+[package]
+name = "displayer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+askama = "0.15.4"
+persister = { path = "../persister" }
